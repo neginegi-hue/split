@@ -9,23 +9,30 @@ import (
 )
 
 var bytes int
-var lines int
+var LineCount int
 var suffixNumber bool
 
 func init() {
 	flag.BoolVar(&suffixNumber, "d", false, "接尾語を数値に変更する")
-	flag.IntVar(&lines, "l", 1000, "行数の値を指定")
+	flag.IntVar(&LineCount, "l", 1000, "行数の値を指定")
 	flag.IntVar(&bytes, "b", 0, "バイト数単位の値を指定")
 }
 
 func main() {
-	run()
+	if bytes == 0 {
+		linesSplit()
+	} else {
+		//bytesSplit()
+	}
 }
 
-func run() {
+func linesSplit() {
 	flag.Parse()
 
 	args := flag.Args()
+	if len(args) < 1 {
+		return
+	}
 	inputFile, err := os.Open(args[0])
 	if err != nil {
 		fmt.Println("Error opening file:", err)
@@ -46,17 +53,23 @@ func run() {
 			return
 		}
 
-		if lineCount%lines == 0 {
+		if lineCount%LineCount == 0 {
 			if outputFile != nil {
 				writer.Flush()
 				outputFile.Close()
 			}
 			fileCount++
 			var newFilename string
-			if suffixNumber {
-				newFilename = createFilenameNumber(args[1], fileCount)
+			var curFilename string
+			if len(args) < 2 {
+				curFilename = ""
 			} else {
-				newFilename = createFilenameString(args[1], fileCount)
+				curFilename = args[1]
+			}
+			if suffixNumber {
+				newFilename = createFilenameNumber(curFilename, fileCount)
+			} else {
+				newFilename = createFilenameString(curFilename, fileCount)
 			}
 
 			outputFile, err = os.Create(newFilename)
